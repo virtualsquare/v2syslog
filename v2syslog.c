@@ -81,11 +81,11 @@ static int family(void) {
 static int change_syslog_type(void) {
 	switch (syslog_type) {
 		case SOCK_DGRAM:
-			if (syslog_option & LOG_DGRAM_ONLY) return -1;
+			if (syslog_option & LOG_ONLY) return -1;
 			syslog_type = SOCK_STREAM;
 			break;
 		case SOCK_STREAM:
-			if (syslog_option & LOG_STREAM_ONLY) return -1;
+			if (syslog_option & LOG_ONLY) return -1;
 			syslog_type = SOCK_DGRAM;
 			break;
 	}

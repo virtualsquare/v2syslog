@@ -285,7 +285,7 @@ void strfaddr(FILE *f, union sockaddr_any *addr, int add_port) {
 			fprintf(f, "%s",
 					inet_ntop(AF_INET6, &addr->in6.sin6_addr, buf, INET6_ADDRSTRLEN));
 			if (add_port)
-				fprintf(f, "%d",
+				fprintf(f, "/%d",
 						ntohs(addr->in6.sin6_port));
 			break;
 		default: fprintf(f,"-");
@@ -402,7 +402,6 @@ static void syslog2env(struct logitem *item) {
 void syslogd_cb(char *path, char *format, int *fd, void *arg) {
 	struct logitem *item = arg;
 	char nl[] = {'\n'};
-	char *fmt = (format == NULL) ? STDFMT : format;
 	if (path[0] == '!') {
 		switch (fork()) {
 			case 0:
@@ -416,7 +415,9 @@ void syslogd_cb(char *path, char *format, int *fd, void *arg) {
 				selflog(LOG_ERR, "error forking file %s", path + 1);
 				break;
 		}
+		return;
 	}
+	char *fmt = (format == NULL) ? STDFMT : format;
 	if (*fd < 0)
 		*fd = openat(fdcwd, path, O_WRONLY | O_APPEND | O_CREAT | O_CLOEXEC, 0600);
 	if (*fd < 0)

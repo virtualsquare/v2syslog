@@ -8,13 +8,14 @@ void v2openlog(const char *ident, int option, int facility);
 void v2closelog(void);
 
 #define LOG_STREAM           (1 << 24)
-#define LOG_STREAM_ONLY      (1 << 25)
-#define LOG_DGRAM_ONLY       LOG_STREAM_ONLY
+#define LOG_ONLY             (1 << 25)
+#define LOG_DGRAM_ONLY       LOG_ONLY
+#define LOG_STREAM_ONLY      (LOG_STREAM | LOG_ONLY)
 // LOG_3164==0 && LOG_5424==0 means old BSD, no hostname
 #define LOG_3164             (1 << 26)   // RFC 3164
-#define LOG_5424             (1 << 27)   // RFC 5424, RFC 3164 otherwise
+#define LOG_5424             (1 << 27)   // RFC 5424
 #define LOG_OLDPROTO         LOG_3164
-#define LOG_NEWPROTO         LOG_5427
+#define LOG_NEWPROTO         LOG_5424
 #define LOG_FRAMING_COUNT    (1 << 28)   // RFC 6587
 #define LOG_USE_TID          (1 << 29)
 
