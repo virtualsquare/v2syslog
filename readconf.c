@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <v2syslog_const.h>
 #include <selflog.h>
 #include <logset.h>
 #include <stropt.h>
@@ -79,15 +80,35 @@ int readfconf(FILE * f, const char *path) {
 				if (logstr2set(tags[0], &set) < 0) 
 					selflog(LOG_ERR, "conf %s: syntax error in line %d", path, lineno), err++;
 				else {
-					struct logconf *new = malloc(sizeof(*new) + strlen(tags[1]) + 1 +
-							((tagc == 4) ? ( strlen(tags[2]) + 1) : 0));
+					char *path = tags[1];
+					char *format = (tagc == 4) ? tags[2] : NULL;
+					char *home = "";
+					if (path[0] == '~') {
+						home = secure_getenv("HOME");
+						if (home == NULL) {
+							selflog(LOG_ERR, "conf %s: home dir error in line %d", path, lineno), err++;
+							break;
+						} else {
+							if (path[1] == '\0')
+								path = USER_SYSLOG_DEFAULT_PATH;
+							else if (path[1] == '/')
+								path++;
+							else {
+								selflog(LOG_ERR, "conf %s: filename error in line %d", path, lineno), err++;
+								break;
+							}
+						}
+					}
+					struct logconf *new = malloc(sizeof(*new) + strlen(home) + strlen(path) + 1 +
+							((format == NULL) ? 0 : (strlen(format) + 1)));
 					new->next = NULL;
 					new->set = set;
 					new->path = (char *)(new + 1);
-					strcpy(new->path, tags[1]);
+					strcpy(new->path, home);
+					strcpy(new->path + strlen(home), path);
 					if (tagc == 4) {
-						new->format = new->path + strlen(tags[1]) + 1;
-						strcpy(new->format, tags[2]);
+						new->format = new->path + strlen(home) + strlen(path) + 1;
+						strcpy(new->format, format);
 					} else
 						new->format = NULL;
 					new->fd = -1;

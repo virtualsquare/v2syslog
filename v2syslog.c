@@ -33,11 +33,10 @@
 #include <netinet/in.h>
 #include <syslog.h>
 #include <ioth.h>
+
+#include <v2syslog_const.h>
 #include <v2syslog.h>
 
-#define LOG_DEFAULT_PATH "/dev/log"
-#define USER_LOG_DEFAULT_PATH ".log"
-#define LOG_DEFAULT_PORT 514
 #define PID_STR_SIZE (((sizeof(pid_t) * 8  + 2) / 3) + 1)
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -127,11 +126,11 @@ void v2setlog(struct ioth *stack,struct v2syslog_server server,
 			if (server.addr == NULL) server.addr = LOG_DEFAULT_PATH;
 			snprintf(syslog_sock.un.sun_path, sizeof(syslog_sock.un.sun_path), "%s", server.straddr);
 			if (syslog_sock.un.sun_path[0] == '~') {
-				char *home = getenv("HOME");
+				char *home = secure_getenv("HOME");
 				if (home == NULL) home = "/";
 				if (syslog_sock.un.sun_path[1] == 0)
 					snprintf(syslog_sock.un.sun_path, sizeof(syslog_sock.un.sun_path),
-							"%s/" USER_LOG_DEFAULT_PATH, home);
+							"%s" USER_LOG_DEFAULT_PATH, home);
 				else
 					snprintf(syslog_sock.un.sun_path, sizeof(syslog_sock.un.sun_path),
 							"%s/%s", home, server.straddr);

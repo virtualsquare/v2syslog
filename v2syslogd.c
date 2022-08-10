@@ -43,26 +43,19 @@
 #include <strcase.h>
 #include <ioth.h>
 #include <iothconf.h>
+#include <v2syslog_const.h>
 #include <fdprintf.h>
 #include <readconf.h>
 #include <syslog_names.h>
 #include <selflog.h>
 
-/* standard log format, BSD alike */
-#define STDFMT  "%T %H %a%[: %m"
 static int verbose;
 static int fdcwd = -1;
 static pid_t mypid;
 static struct utsname my_uname;
 static int reload = 0;
 static char *conffile = NULL;
-static char default_conf[] = "*.* /dev/stderr\n";
-
-// self logging!
-//#define selflog(X, F, ...) fprintf(stderr, F "\n", ##__VA_ARGS__)
-#define LOG_DEFAULT_PATH "/dev/log"
-#define USER_LOG_DEFAULT_PATH ".log"
-#define LOG_DEFAULT_PORT 514
+static char default_conf[] = V2SYSLOG_DEFAULT_CONF;
 
 struct ioth *syslog_stack = NULL;
 static int syslog_type = SOCK_DGRAM;
@@ -417,7 +410,7 @@ void syslogd_cb(char *path, char *format, int *fd, void *arg) {
 		}
 		return;
 	}
-	char *fmt = (format == NULL) ? STDFMT : format;
+	char *fmt = (format == NULL) ? V2SYSLOG_DEFAULT_FORMAT : format;
 	if (*fd < 0)
 		*fd = openat(fdcwd, path, O_WRONLY | O_APPEND | O_CREAT | O_CLOEXEC, 0600);
 	if (*fd < 0)
@@ -664,11 +657,11 @@ int main(int argc, char *argv[]) {
 		if (args.unixsock[0] == '\0')
 			snprintf(syslog_sock.un.sun_path, 108, "%s", LOG_DEFAULT_PATH);
 		else if (args.unixsock[0] == '~') {
-			char *home = getenv("HOME");
+			char *home = secure_getenv("HOME");
 			if (home == NULL) home = "/";
 			if (args.unixsock[1] == 0)
 				snprintf(syslog_sock.un.sun_path, sizeof(syslog_sock.un.sun_path),
-						"%s/" USER_LOG_DEFAULT_PATH, home);
+						"%s" USER_LOG_DEFAULT_PATH, home);
 			else
 				snprintf(syslog_sock.un.sun_path, sizeof(syslog_sock.un.sun_path),
 						"%s/%s", home, args.unixsock+1);
