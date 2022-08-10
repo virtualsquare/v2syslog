@@ -4,7 +4,7 @@ Syslog library and deamon for virtualsquare projects
 # Motivation
 
 Syslog is a service for deamon processes to provide feedback about their
-operational status.
+operational status: error messages, crtical situations, informational or debug messages.
 
 Initially created for sendmail it is de facto (and de jure) standard for logging.
 Syslog *standard* has been defined by RFC 3164 and then by RFC 5424.
@@ -13,26 +13,29 @@ The implementation provided by glibc and the syslog deamons currently available 
 Linux distributions is based on a two/three tiers architecture:
 
 * `syslog(3)` facility included in glibc provides functions to send log messages
-to a local daemon running on the same host (it uses a `AF_UNIX`)
+to a local daemon running on the same host (it uses a `AF_UNIX` socket, usually `/dev/log`)
 
 * `syslogd` (nowadays often provided by a systemd metastasis) is a local server which collects
 the log messages from local deamon and dispatches them to log file archives and/or
 to syslog centralized servers (using the UDP or TCP services defined in the RFCs).
 
-* Site, institution centralized `syslog` servers collectioning all the relevant log messages.
+* Site, institution centralized `syslog` servers collect all the relevant log messages.
 Sysadms can monitor the status of a large number of hosts by examining or processing the
 log messages managed by these servers.
 
 This implementation design is unfit for virtualsquare projects:
+
 * Internet of Threads (IoTh) processes **are** network nodes, having their own personality on
-the network. The physical host (e.g. Linux box) they are currently running on is merely
+the network (IP address, independent TCP-IP stack).
+The physical host (e.g. Linux box) they are currently running on is merely
 incidental. The *local* syslogd has no roles in this architecture.
 * By VUOS users can run their own daemons in user space, using user privileges.
-All VUOS modules create specific execution environments for processes, likewise user
+All VUOS modules create specific execution environments for processes, likewise if they were
+some sort of user level
 implemented namespaces: neither root access nor specific capabilities are required.
 Using the currently available syslog implementation users can run their daemons but
 root access is required to read the log messsages (e.g. read the `/var/log/syslog` file)
-or configure syslog to store or process log messages elseway (e.g. by editing `/etc/syslog.conf`
+or configure syslog to store or process log messages elsewhere (e.g. by editing `/etc/syslog.conf`
 file)
 
 `v2syslog` provides a library which enables daemon processes to route their log messages to
@@ -125,6 +128,13 @@ It is like RFC 3164 but no hostname is added. It is the legacy BSD protocol).
 
 ### `v2syslogx` and `v2vsyslogx`
 
+```C
+void v2syslogx(int priority, const char *msg_id, const char *struct_data,
+    const char *format, ...);
+void v2vsyslogx(int priority, const char *msg_id, const char *struct_data,
+    const char *format, va_list ap);
+```
+
 `v2syslogx` and `v2vsyslogx` are extended versions of `v2syslog` and `v2vsyslog` providing
 two further arguments:
 
@@ -135,7 +145,7 @@ two further arguments:
 
 `v2syslogd` is a syslog daemon. It currently supports UNIX datagram and UDP.
 
-The main command line options are:
+The most relevant command line options are:
 
 * `-f <conffile>` or `--rcfile <conffile>`: define the configuration file. The syntax is
 similar to syslog.conf. It is described here below in the next section. When omitted `v2syslogd` simply
@@ -189,7 +199,7 @@ compliant)
 * `%s`: the structured data
 * `%m`: the log message
 
-When not specified the default format is `"%T %H %a%[: %m"`: it is the same format used in /var/log/syslog.
+When not specified, the default format is `"%T %H %a%[: %m"`: it is the same format used in /var/log/syslog.
 e.g.
 ```
 Aug 09 17:40:41 eipi10 renzo: test message
@@ -206,8 +216,8 @@ the script/program as environment variables:
 
 * `SL_PRIO`: priority name
 * `SL_FAC`: facility name
-* `SL_DTIME`: daemon time (UTC seconds from teh epoch)
-* `SL_LTIME`: logging/sender time (UTC seconds from teh epoch)
+* `SL_DTIME`: daemon time (UTC seconds from the epoch)
+* `SL_LTIME`: logging/sender time (UTC seconds from the epoch)
 * `SL_SENDER`: IP address of the sender
 * `SL_SENDPORT`: IP port of the sender
 * `SL_HOST`: hostname
@@ -219,9 +229,12 @@ the script/program as environment variables:
 ### v2syslog configuration file example:
 
 ```
-*.crit    /dev/stderr
-*.*       /tmp/syslog "%F %P %t %U %I %h %a %p %M %s %m"
+*.crit        /dev/stderr
+*.*           /tmp/testlog      "%F %P %t %U %I %h %a %p %M %s %m"
+user.notice   ~
 ```
 
 all the log messages are appended to /tmp/syslog, the log messages of level critical or above are also
-printed on the standard error file.
+printed on the standard error file. Log messages whose faicility is `user` and level `notice` or above
+are also appended to the default user syslog file: `$HOME/.syslog` (where $HOME is the pathname
+of the user's home directory, retrieved from the HOME env variable).
