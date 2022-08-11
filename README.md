@@ -159,7 +159,7 @@ it by a SIGTERM message or to reload the configuration file using a SIGHUP messa
 * `-l <path>` or `--selflog <path>`: set the pathname to file v2syslogd errors as syslog deamon errors
 cannot be managed by syslog itself! Errors are printed on standard error if not set.
 * `-s <ioth stack configuration>` or `--stack <ioth stack configuration>`: start v2syslogd as a IoTh process, the parameter is the IoTh configuration string as supported by [iothconf](https://github.com/virtualsquare/iothconf).
-* `-4` or `--ipv4`: use IPv4 only (th default behavior is to use IPv4 and IPv6.
+* `-4` or `--ipv4`: use IPv4 only (th default behavior is to use IPv6 (and IPv4 in backwards compatibility mode if supported by the stack).
 
 ### v2syslog configuration file
 
@@ -177,7 +177,7 @@ The action can be the pathname of a file or the pathname of a script/program pre
 In the former case (file) all log messages matching the selector are added (in append mode) to the
 named file. It is possible to add a format string at the end of the line.
 The format string is similar to printf or strftime format strings: all the characters of the
-format are verbtim copied to the output except for the following conversion specifications:
+format are verbatim copied to the output except for the following conversion specifications:
 
 * `%%`: a percent symbol
 * `%P`: the priority name

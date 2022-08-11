@@ -61,7 +61,7 @@ target_link_libraries(v2syslogd libv2syslog stropt iothconf)
 install(TARGETS v2syslogd
 		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-# add_subdirectory(man)
+add_subdirectory(man)
 
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${PROJECT_SOURCE_DIR}/Uninstall.cmake")

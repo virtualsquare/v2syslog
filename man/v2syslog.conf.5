@@ -1,0 +1,147 @@
+.\" Copyright (C) 2022 VirtualSquare. Project Leader: Renzo Davoli
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License,
+.\" as published by the Free Software Foundation, either version 2
+.\" of the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+.\" MA 02110-1301 USA.
+.\"
+.\" generated with Ronn-NG/v0.10.1
+.\" http://github.com/apjanke/ronn-ng/tree/0.10.1.pre1
+.TH "V2SYSLOG\.CONF" "5" "August 2022" "VirtualSquare"
+.SH "NAME"
+\fBv2syslog\.conf\fR \- \fBv2syslogd\fR(1) configuration file
+.SH "DESCRIPTION"
+The syntax is similar to \fBsyslog\.conf\fR(5): "Every rule consists of two fields, a selector field and an action field\. These two fields are separated by one or more spaces or tabs\. The selector field specifies a pattern of facilities and priorities belonging to the specified action\."
+.P
+Lines beginning by # are comments\.
+.P
+The syntax of selectors is the same described in \fBsyslog\.conf\fR(5)\.
+.P
+The action can be the pathname of a file or the pathname of a script/program prefixed by \fB!\fR\. In the former case (file) all log messages matching the selector are added (in append mode) to the named file\. It is possible to add a format string at the end of the line\. The format string is similar to printf or strftime format strings: all the characters of the format are verbtim copied to the output except for the following conversion specifications:
+.TP
+\fB%%\fR
+a percent symbol\.
+.TP
+\fB%P\fR
+the priority name\.
+.TP
+\fB%F\fR
+the facility name
+.TP
+\fB%t\fR
+the local time of the reception of the message by v2syslogd, using the format of the Example 4, RFC 5424, section 6\.2\.3\.1\.
+.TP
+\fB%T\fR
+the local time of the reception of the message by v2syslogd, using the BSD legacy format (RFC 3164 compliant)
+.TP
+\fB%U\fR
+the timestamp got by the sender (the logging process)\. It is provided in the format of RFC5424 UTC
+.TP
+\fB%I\fR
+the IP address and port of the sender process
+.TP
+\fB%i\fR
+the IP address of the sender process
+.TP
+\fB%h\fR
+the hostname
+.TP
+\fB%H\fR
+the hostname if specified otherwise the IP address if defined otherwise the nodename
+.TP
+\fB%K\fR
+the IP address if defined otherwise the nodename
+.TP
+\fB%a\fR
+the application
+.TP
+\fB%p\fR
+the process id
+.TP
+\fB%[\fR
+returns [pid] if the process id is defined, an empty string otherwise
+.TP
+\fB%M\fR
+the message id
+.TP
+\fB%s\fR
+the structured data
+.TP
+\fB%m\fR
+the log message
+.P
+When not specified, the default format is \fB"%T %H %a%[: %m"\fR: it is the same format used in /var/log/syslog\. e\.g\.
+.P
+Aug 09 17:40:41 eipi10 renzo: test message Aug 09 17:40:54 deamonhost mydaemon[367407]: second test
+.P
+a quite complete output can be obtained using the format "%F %P %t %U %I %h %a %p %M %s %m":
+.IP "" 4
+.nf
+user     notice  2022\-08\-09T17:49:33\.343428+02:00 2022\-08\-09T15:49:33\.343073Z ::ffff:10\.0\.0\.101/57507 eipi10 renzo \- \- test message
+.fi
+.IP "" 0
+.P
+If the action field begins by exclamative mark ! v2syslog starts an instance of the script/program for each received message matching the selector\. All the fields of the log item are provided to the script/program as environment variables:
+.TP
+\fBSL_PRIO\fR
+priority name
+.TP
+\fBSL_FAC\fR
+facility name
+.TP
+\fBSL_DTIME\fR
+daemon time (UTC seconds from the epoch)
+.TP
+\fBSL_LTIME\fR
+logging/sender time (UTC seconds from the epoch)
+.TP
+\fBSL_SENDER\fR
+IP address of the sender
+.TP
+\fBSL_SENDPORT\fR
+IP port of the sender
+.TP
+\fBSL_HOST\fR
+hostname
+.TP
+\fBSL_APPL\fR
+application
+.TP
+\fBSL_PID\fR
+pricess id/thread id
+.TP
+\fBSL_MSGID\fR
+message id
+.TP
+\fBSL_MSG\fR
+the log message
+.SH "Examples:"
+A simple example:
+.IP "" 4
+.nf
+    *\.crit * *   /dev/stderr
+    *\.* * *      /tmp/testlog   "%F %P %t %U %I %h %a %p %M %s %m"
+    user\.notice  ~
+.fi
+.IP "" 0
+.P
+all the log messages are appended to /tmp/syslog, the log messages of level critical or above are also printed on the standard error file\. Log messages whose faicility is user and level notice or above are also appended to the default user syslog file: $HOME/\.syslog (where $HOME is the pathname of the user's home directory, retrieved from the HOME env variable)\.
+.SH "SEE ALSO"
+v2syslogd(1)
+.SH "AUTHOR"
+VirtualSquare\. Project leader: Renzo Davoli\.

@@ -1,0 +1,102 @@
+.\" Copyright (C) 2022 VirtualSquare. Project Leader: Renzo Davoli
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License,
+.\" as published by the Free Software Foundation, either version 2
+.\" of the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+.\" MA 02110-1301 USA.
+.\"
+.\" generated with Ronn-NG/v0.10.1
+.\" http://github.com/apjanke/ronn-ng/tree/0.10.1.pre1
+.TH "V2SYSLOG" "3" "August 2022" "VirtualSquare"
+.SH "NAME"
+v2openlog, v2closelog, v2syslog, v2vsyslog, v2setlog, v2syslogx, v2vsyslogx \- send messages to a local or networked logger
+.SH "SYNOPSIS"
+\fB#include <v2syslog\.h>\fR
+.P
+\fBvoid v2openlog(const char *\fR \fIident\fR\fB, int\fR \fIoption,\fR\fBint\fR \fIfacility\fR\fB);\fR
+.P
+\fBvoid v2closelog(void);\fR
+.P
+\fBvoid v2syslog(int\fR \fIpriority\fR\fB, const char *\fR \fIformat\fR\fB, \|\.\|\.\|\.);\fR
+.P
+\fBvoid v2vsyslog(int\fR \fIpriority\fR\fB, const char *\fR \fIformat\fR\fB, va_list\fR \fIap\fR\fB);\fR
+.P
+\fBvoid v2setlog(struct ioth *\fR \fIstack\fR\fB, struct v2syslog_server\fR \fIserver\fR\fB, const char *\fR \fIhostname\fR\fB, const char *\fR \fIprocid\fR\fB);\fR
+.P
+\fBvoid v2syslogx(int\fR \fIpriority\fR\fB, const char *\fR \fImsg_id\fR\fB, const char *\fR \fIstruct_data\fR\fB, const char *\fR \fIformat\fR\fB, \|\.\|\.\|\.);\fR
+.P
+\fBvoid v2vsyslogx(int\fR \fIpriority\fR\fB, const char *\fR \fImsg_id\fR\fB, const char *\fR \fIstruct_data\fR\fB, const char *\fR \fIformat\fR\fB, va_list\fR \fIap\fR\fB);\fR
+.SH "DESCRIPTION"
+\fBv2syslog\fR is a library which enables daemon processes to route their log messages to local or networked logging services\.
+.P
+It is an extension of \fBsyslog\fR(3)\. \fBv2syslog\fR has been designed for Virtualsquare processes:
+.IP "\(bu" 4
+Internet of Threads (IoTh) processes are network nodes, having their own personality on the network (IP address, independent TCP\-IP stack)\. The physical host (e\.g\. Linux box) they are currently running on is merely incidental\. The local syslogd has no roles in this architecture\.
+.IP "\(bu" 4
+By VUOS users can run their own daemons in user space, using user privileges\. All VUOS modules create specific execution environments for processes, likewise if they were some sort of user level implemented namespaces: neither root access nor specific capabilities are required\. Using the currently available syslog implementation users can run their daemons but root access is required to read the log messsages (e\.g\. read the /var/log/syslog file) or configure syslog to store or process log messages elsewhere (e\.g\. by editing /etc/syslog\.conf file)
+.IP "" 0
+.P
+This library provides the following functions:
+.TP
+\fBv2openlog()\fR
+\fBv2openlog()\fR opens a connection to the system logger for a program\. The arguments are the same of \fBopenlog\fR(3)\. The values that may be specified for \fIoption\fR are described below\.
+.TP
+\fBv2closelog()\fR
+\fBv2closelog()\fR closes the file descriptor being used to write to the system logger\. The use of closelog() is optional\.
+.TP
+\fBv2syslog()\fR, \fBv2vsyslog()\fR
+\fBv2syslog()\fR generates and send a log message that can be processed by \fBsyslogd\fR(8) or \fBv2syslogd\fR(1) or any other logger using the protocols defined by RFC 3124 or RFC 5424\. The arguments are the same of \fBsyslog\fR(3) or \fBvsyslog\fR(3)\.
+.TP
+\fBv2setlog()\fR
+\fBv2setlog()\fR defines the logging service to use\. \fIstack\fR is the Internet of Thread stack to use (the kernel provided stack is used if \fIstack\fR is NULL)\. \fIserver\fR defines the logging server address\. Some convenient macros are provided to set this argument:
+.IP
+\fBv2syslog_UNIX(\fR\fIPATH\fR\fB)\fR: the deamon is reachable at the UNIX socket \fIPATH\fR\.
+.IP
+\fBv2syslog_INET(\fR\fIADDR\fR\fB,\fR\fIPORT\fR\fB)\fR: the daemon is available at the IPv4 address \fIADDR\fR, the port is \fIPORT\fR\. \fIADDR\fR is a pointer to a \fIstruct in_addr\fR (in network byte order)\.
+.IP
+\fBv2syslog_INET6(\fR\fIADDR\fR\fB,\fR \fIPORT\fR\fB)\fR: the daemon is available at the IPv6 address \fIADDR\fR, the port is \fIPORT\fR\. \fIADDR\fR is a pointer to a \fIstruct in6_addr\fR (in network byte order)\.
+.IP
+\fIhostname\fR defines the hostname value included in log messages (\fInodename\fR returned by \fBuname(2)\fR is used if \fIhostname\fR is NULL)
+.IP
+\fIprocid\fR defines the procid value for the log messages (the output of \fBgetpid\fR(2) or \fBgettid\fR(2) is used if this argment is NULL)\.
+.TP
+\fBv2syslogx()\fR, \fBv2vsyslogx()\fR
+These functions extend \fBv2syslog()\fR and \fBv2vsyslog()\fR respectively\. Two further arguments are provided:
+.IP
+\fImsg_id\fR define the message id (6\.2\.7 of RFC 5424),
+.IP
+\fIstruct_data\fR define the structured\-date (6\.3 of RFC 5424)\.
+.TP
+Values for \fIoption\fR
+The \fIoption\fR argument to \fBv2openlog()\fR is a bit mask\. Its value is the bitwise\-or of the values defined for \fBopenlog\fR(3) and the following values:
+.IP
+\fBLOG_STREAM\fR try to send log messages using stream sockets (TCP or UNIX\-STREAM)
+.IP
+\fBLOG_STREAM_ONLY\fR send log messages using stream sockets (TCP or UNIX\-STREAM) only
+.IP
+\fBLOG_DGRAM_ONLY\fR send log messages using datagram sockets (UDP or UNIX\-DGRAM) only
+.IP
+\fBLOG_3164\fR use the protocol defined in RFC 3164
+.IP
+\fBLOG_5424\fR use the protocol defined in RFC 5424
+.IP
+\fBLOG_FRAMING_COUNT\fR use the octet counting (3\.1\.1 of RFC 6587)
+.IP
+\fBLOG_USE_TID\fR send tid (thread id) instead of pid
+.SH "AUTHOR"
+VirtualSquare\. Project leader: Renzo Davoli
