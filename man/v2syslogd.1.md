@@ -1,6 +1,3 @@
-v2syslogd(1) -- syslog server
-====
-
 <!--
 .\" Copyright (C) 2022 VirtualSquare. Project Leader: Renzo Davoli
 .\"
@@ -26,47 +23,50 @@ v2syslogd(1) -- syslog server
 .\"
 -->
 
-## SYNOPSIS
+# NAME
+v2syslogd(1) -- syslog server
 
-`v2syslogd` [<options>]
+# SYNOPSIS
 
-## DESCRIPTION
+`v2syslogd` [*options*]
+
+# DESCRIPTION
 `v2syslogd` is a syslog server implementation.i It can be configured to bind a UNIX datagram or a
 UDP socket. It supports IPv6 and IPv4 and can run as a Internet of Threads process (IoTH).
 
-## OPTIONS
-  * `-f` <conffile>, `--rcfile` <conffile>:
-    define the configuration file. The syntax is similar to syslog.conf. It is described here below in the next section. When omitted v2syslogd simply prints the log messages received on standard error.
+# OPTIONS
+  `-f` *conffile*, `--rcfile` *conffile*
+: define the configuration file. The syntax is similar to syslog.conf. It is described here below in the next section. When omitted v2syslogd simply prints the log messages received on standard error.
 
-  * `-d`, `--daemon`:
-    run in daemon mode.
+  `-d`, `--daemon`
+: run in daemon mode.
 
-  * `-p` <pidfile>, `--pidfile` <pidfile>:
-    set the pathname of the file to save daemon's pid.
+  `-p` *pidfile*, `--pidfile` *pidfile*
+: set the pathname of the file to save daemon's pid.
 
-  * `-P` <portno>, `--port` <portno>:
-    use this port for UDP or TCP.
+  `-P` *portno*, `--port` *portno*
+: use this port for UDP or TCP.
 
-  * `-T`, `--tcp`:
-    use TCP (not yet implemented).
+  `-T`, `--tcp`
+: use TCP (not yet implemented).
 
-  * `-U`, `--udp`:
-    use UDP (default).
+  `-U`, `--udp`
+: use UDP (default).
 
-  * `-u` <socket>, `--socket` <socket>:
-    use this UNIX socket.
+  `-u` *socket*, `--socket` *socket*
+: use this UNIX socket.
 
-  * `-l` <path>, `--selflog` <path>:
-    set the pathname to file v2syslogd errors as syslog deamon errors cannot be managed by syslog itself. Errors are printed on standard error if not set.
+  `-l` *path*, `--selflog` *path*
+: set the pathname to file v2syslogd errors as syslog deamon errors cannot be managed by syslog itself. Errors are printed on standard error if not set.
 
-  * `-s` <ioth stack conf>, `--stack` <ioth stack conf>:
-    start v2syslogd as a Internet of Threads (IoTh) process, the parameter is the IoTh configuration string as supported by iothconf.
+  `-s` *ioth stack conf*, `--stack` *ioth stack conf*
+: start v2syslogd as a Internet of Threads (IoTh) process, the parameter is the IoTh configuration string as supported by iothconf.
 
-  * `-4`, `--ipv4`:
-    use IPv4 only (th default behavior is to use IPv6 (and IPv4 in backwards compatibility mode if supported by the network stack).
+  `-4`, `--ipv4`
+: use IPv4 only (th default behavior is to use IPv6 (and IPv4 in backwards compatibility mode if supported by the network stack).
 
-## SEE ALSO
+# SEE ALSO
 v2syslog(3), v2sysslog.conf(5)
 
-## AUTHOR
+# AUTHOR
 VirtualSquare. Project leader: Renzo Davoli.
