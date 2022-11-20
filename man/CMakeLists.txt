@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
 
-set(PANDOC_ORGANIZATION "VirtualSquare")
-set(PANDOC_ARGS --organization=${PANDOC_ORGANIZATION})
+set(PANDOC_ORG "VirtualSquare")
 
 # ### pandoc pages
 
@@ -15,7 +14,7 @@ foreach(VU_PANDOC_PATH IN LISTS VU_PANDOC_PAGES)
 	list(APPEND VU_MAN_FILES ${VU_MANPAGE})
 endforeach(VU_PANDOC_PATH)
 
-add_custom_target(${PROJECT_NAME}_manpages ALL make PANDOC_ARGS="${PANDOC_ARGS}"  ${VU_MAN_FILES}
+add_custom_target(${PROJECT_NAME}_manpages ALL make PANDOC_ORG="${PANDOC_ORG}"  ${VU_MAN_FILES}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 ### man pages
