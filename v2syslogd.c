@@ -574,7 +574,7 @@ static struct option long_options[] = {
 	{0,0,0,0}
 };
 
-static char *arg_tags = "dvpPUtuls4";
+static char arg_tags[] = "dvpPUtuls4";
 static union {
 	struct {
 		char *daemon;
